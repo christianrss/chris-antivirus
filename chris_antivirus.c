@@ -1,7 +1,7 @@
 /* chris_antivirus.c */
 #include "chris_antivirus.h"
 
-Database *mkdatabase(int32 cap) {
+Database *mkdatabase() {
     Database *db;
     Entry *p;
     int32 size;
@@ -10,9 +10,10 @@ Database *mkdatabase(int32 cap) {
     db = (Database *)malloc($i size);
     assert(db);
     zero($1 db, size);
+
     db->num = 0;
-    db->cap = cap;
-    size = cap * sizeof(struct s_entry);
+    db->cap = Blocksize;
+    size = Blocksize * sizeof(struct s_entry);
     p = (Entry *)malloc($i size);
     assert(p);
     zero($1 p, size);
@@ -25,6 +26,7 @@ void destroydb(Database *db) {
     db->cap = 0;
     db->num = 0;
     free(db->entries);
+    free(db);
 
     return;
 }
@@ -59,18 +61,57 @@ void addtodb(Database *db, Entry e) {
     return;
 }
 
+bool adddir(Database *db, int8 *path) {
+    Entry e;
+    int32 fd;
+    int64 n;
+    signed int ret;
+    struct linux_dirent *p;
+    int8 *p2;
+    int8 buf[102400];
+
+    ret = open($c path, O_RDONLY|O_DIRECTORY);
+    if (ret < 1)
+        return false;
+    else
+        fd = $4 ret;
+
+    memset($c buf, 0, sizeof(buf));
+    ret = syscall(SYS_getdents, $i fd, buf, (sizeof(buf)-1));
+    if (ret < 0) {
+        close($i fd);
+        return false;
+    }
+    n = ret;
+
+    // write(1, buf, $i n);
+    // close($i fd);
+    // printf("\n\n");
+    // exit(0);
+
+    for (p2 = buf; n; n-= p->d_reclen, p2 += p->d_reclen) {
+        p = (struct linux_dirent*)p2;
+        // printf("p->d_reclen:\t %d\n", p->d_reclen);
+        // printf("p->d_off:\t %lu\n", p->d_off);
+        // printf("p->d_name:\t %s\n", p->d_name);
+        // printf("\n");
+        zero($1 &e, sizeof(struct s_entry));
+        strncpy($c e.dir, $c path, 63);
+        strncpy($c e.file, $c p->d_name, 31);
+        addtodb(db, e);
+    }
+    close($i fd);
+
+    return true;
+}
+
 int main(int argc, char *argv[]) {
     Database *db;
 
-    Entry e1, e2;
-    strncpy($c e1.dir, "/tmp", 63);
-    strncpy($c e2.dir, "/tmp", 63);
-    strncpy($c e1.file, "FILE1.txt", 31);
-    strncpy($c e2.file, "anotherfile.txt", 31);
+    assert(argc > 1);
 
-    db = mkdatabase(50000);
-    addtodb(db, e1);
-    addtodb(db, e2);
+    db = mkdatabase();
+    adddir(db, $1 argv[1]);
     showdb(db);
     destroydb(db);
 

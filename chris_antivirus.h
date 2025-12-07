@@ -7,6 +7,9 @@
 #include <stdbool.h>
 #include <assert.h>
 #include <errno.h>
+#include <fcntl.h> 
+#include <sys/syscall.h>
+#include <dirent.h>
 #include <chrisutils.h>
 
 typedef unsigned char int8;
@@ -40,7 +43,17 @@ struct s_database {
 };
 typedef struct s_database Database;
 
-Database *mkdatabase(int32);
+// struct linux_dirent {
+//     unsigned long d_ino;
+//     off_t d_off;
+//     unsigned short d_reclen;
+//     char d_name[];
+// };
+
+#define linux_dirent dirent
+
+Database *mkdatabase(void);
+bool adddir(Database*,int8*);
 void addtodb(Database*,Entry);
 void destroydb(Database*);
 void showdb(Database*);
