@@ -38,7 +38,10 @@ void showdb(Database *db) {
         db->cap, db->num);
 
     for (n=0; n<db->num; n++)
-        printf("%s/%s\n", db->entries[n].dir, db->entries[n].file);
+        printf("%s/%s%c\n", db->entries[n].dir, db->entries[n].file,
+            (db->entries[n].type == dir)) ?
+                    '/':
+                0;
 
     return;
 }
@@ -76,30 +79,35 @@ bool adddir(Database *db, int8 *path) {
     else
         fd = $4 ret;
 
-    memset($c buf, 0, sizeof(buf));
-    ret = syscall(SYS_getdents, $i fd, buf, (sizeof(buf)-1));
-    if (ret < 0) {
-        close($i fd);
-        return false;
-    }
-    n = ret;
+    do {
+        memset($c buf, 0, sizeof(buf));
+        ret = syscall(SYS_getdents, $i fd, buf, (sizeof(buf)-1));
+        if (ret < 0) {
+            close($i fd);
+            return false;
+        } else if (!ret)
+            break;
 
-    // write(1, buf, $i n);
-    // close($i fd);
-    // printf("\n\n");
-    // exit(0);
+        n = ret;
 
-    for (p2 = buf; n; n-= p->d_reclen, p2 += p->d_reclen) {
-        p = (struct linux_dirent*)p2;
-        // printf("p->d_reclen:\t %d\n", p->d_reclen);
-        // printf("p->d_off:\t %lu\n", p->d_off);
-        // printf("p->d_name:\t %s\n", p->d_name);
-        // printf("\n");
-        zero($1 &e, sizeof(struct s_entry));
-        strncpy($c e.dir, $c path, 63);
-        strncpy($c e.file, $c p->d_name, 31);
-        addtodb(db, e);
-    }
+        for (p2 = buf; n; n-= p->d_reclen, p2 += p->d_reclen) {
+            p = (struct linux_dirent*)p2;
+            zero($1 &e, sizeof(struct s_entry));
+
+            if (p->d_type & DT_REG) {
+                e.type = file;
+                strncpy($c e.dir, $c path, 63);
+                strncpy($c e.file, $c p->d_name-1, 31);
+                addtodb(db, e);
+            }
+            else if (p->d_type & DT_DIR) {
+                e.type = dir;
+                strncpy($c e.dir, $c path, 63);
+                strncpy($c e.file, $c p->d_name-1, 31);
+                addtodb(db, e);
+            }
+        }
+    } while (true);
     close($i fd);
 
     return true;

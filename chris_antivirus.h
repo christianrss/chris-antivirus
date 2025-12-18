@@ -30,7 +30,15 @@ typedef unsigned long long int int64;
 typedef int8 Dir[64];
 typedef int8 File[32];
 
+enum e_filetype {
+    file  = 1,
+    dir   = 2,
+    other = 3
+};
+typedef enum e_filetype Filetype;
+
 struct s_entry {
+    Filetype type;
     Dir dir;
     File file;
 };
@@ -42,13 +50,6 @@ struct s_database {
     int32 num;
 };
 typedef struct s_database Database;
-
-// struct linux_dirent {
-//     unsigned long d_ino;
-//     off_t d_off;
-//     unsigned short d_reclen;
-//     char d_name[];
-// };
 
 #define linux_dirent dirent
 
