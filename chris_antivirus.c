@@ -71,7 +71,7 @@ bool adddir(Database *db, int8 *path) {
     signed int ret;
     struct linux_dirent *p;
     int8 *p2;
-    int8 buf[102400];
+    int8 buf[102400], tmp[64];
     char *filename;
 
     ret = open($c path, O_RDONLY|O_DIRECTORY);
@@ -111,6 +111,10 @@ bool adddir(Database *db, int8 *path) {
                 strncpy($c e.dir, $c path, 63);
                 strncpy($c e.file, $c filename, 31);
                 addtodb(db, e);
+
+                zero(tmp, 64);
+                snprintf($c tmp, 63, "%s/%s", $c path, $c e.file);
+                adddir(db, tmp);
             }
         }
     } while (true);
