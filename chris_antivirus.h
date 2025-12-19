@@ -27,6 +27,9 @@ typedef unsigned long long int int64;
 #define $c (char *)
 #define $i (int)
 
+#define onedot(x)   ((*x == '.') && !(*(x+1)))
+#define twodots(x)  ((*(x) == '.') && (*(x+1) == '.') && !(*(x+2)))
+
 typedef int8 Dir[64];
 typedef int8 File[32];
 

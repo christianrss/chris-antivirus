@@ -72,6 +72,7 @@ bool adddir(Database *db, int8 *path) {
     struct linux_dirent *p;
     int8 *p2;
     int8 buf[102400];
+    char *filename;
 
     ret = open($c path, O_RDONLY|O_DIRECTORY);
     if (ret < 1)
@@ -94,16 +95,21 @@ bool adddir(Database *db, int8 *path) {
             p = (struct linux_dirent*)p2;
             zero($1 &e, sizeof(struct s_entry));
 
+            filename = p->d_name-1;
+
+            if (onedot(filename) || twodots(filename))
+                continue;
+
             if (p->d_type & DT_REG) {
                 e.type = file;
                 strncpy($c e.dir, $c path, 63);
-                strncpy($c e.file, $c p->d_name-1, 31);
+                strncpy($c e.file, $c filename, 31);
                 addtodb(db, e);
             }
             else if (p->d_type & DT_DIR) {
                 e.type = dir;
                 strncpy($c e.dir, $c path, 63);
-                strncpy($c e.file, $c p->d_name-1, 31);
+                strncpy($c e.file, $c filename, 31);
                 addtodb(db, e);
             }
         }
