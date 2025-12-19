@@ -52,10 +52,13 @@ struct s_database {
     int32 cap;
     int32 num;
 };
+
 typedef struct s_database Database;
+typedef bool (*function)(Entry);
 
 #define linux_dirent dirent
 
+Database *filter(Database*,function);
 Database *mkdatabase(void);
 bool adddir(Database*,int8*);
 void addtodb(Database*,Entry);

@@ -1,6 +1,28 @@
 /* chris_antivirus.c */
 #include "chris_antivirus.h"
 
+bool testfun(Entry e) {
+    return (e.type == dir);
+}
+
+Database *filter(Database *input, function f) {
+    int32 n;
+    Database *output;
+    Entry *p;
+    bool predicate;
+
+    output = mkdatabase();
+    for (n=0; n < input->num; n++) {
+        p = &input->entries[n];
+        predicate = f(*p);
+        if (predicate)
+            addtodb(output, *p);
+    }
+    destroydb(input);
+
+    return output;
+}
+
 Database *mkdatabase() {
     Database *db;
     Entry *p;
@@ -124,14 +146,15 @@ bool adddir(Database *db, int8 *path) {
 }
 
 int main(int argc, char *argv[]) {
-    Database *db;
+    Database *db, *db2;
 
     assert(argc > 1);
 
     db = mkdatabase();
     adddir(db, $1 argv[1]);
-    showdb(db);
-    destroydb(db);
+    db2 = filter(db, &testfun);
+    showdb(db2);
+    destroydb(db2);
 
     return 0;
 }
