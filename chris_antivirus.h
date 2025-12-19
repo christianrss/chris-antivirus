@@ -27,10 +27,21 @@ typedef unsigned long long int int64;
 #define $c (char *)
 #define $i (int)
 
+#define onedot(x)   ((*x == '.') && !(*(x+1)))
+#define twodots(x)  ((*(x) == '.') && (*(x+1) == '.') && !(*(x+2)))
+
 typedef int8 Dir[64];
 typedef int8 File[32];
 
+enum e_filetype {
+    file  = 1,
+    dir   = 2,
+    other = 3
+};
+typedef enum e_filetype Filetype;
+
 struct s_entry {
+    Filetype type;
     Dir dir;
     File file;
 };
@@ -41,18 +52,15 @@ struct s_database {
     int32 cap;
     int32 num;
 };
-typedef struct s_database Database;
 
-// struct linux_dirent {
-//     unsigned long d_ino;
-//     off_t d_off;
-//     unsigned short d_reclen;
-//     char d_name[];
-// };
+typedef struct s_database Database;
+typedef bool (*function)(Entry);
 
 #define linux_dirent dirent
 
+Database *filter(Database*,function);
 Database *mkdatabase(void);
+bool iself(Entry);
 bool adddir(Database*,int8*);
 void addtodb(Database*,Entry);
 void destroydb(Database*);

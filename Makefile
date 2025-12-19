@@ -1,4 +1,4 @@
-CFLAGS=-O2 -Wall -std=c23 -m32
+CFLAGS=-O2 -Wall -std=c23 -m64
 LDFLAGS=-lbu
 
 .PHONY: all clean
