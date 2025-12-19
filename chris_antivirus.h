@@ -60,6 +60,7 @@ typedef bool (*function)(Entry);
 
 Database *filter(Database*,function);
 Database *mkdatabase(void);
+bool iself(Entry);
 bool adddir(Database*,int8*);
 void addtodb(Database*,Entry);
 void destroydb(Database*);

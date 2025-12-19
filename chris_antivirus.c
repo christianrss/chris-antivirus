@@ -1,8 +1,47 @@
 /* chris_antivirus.c */
 #include "chris_antivirus.h"
 
-bool testfun(Entry e) {
-    return (e.type == dir);
+// bool testfun(Entry e) {
+//     return (e.type == dir);
+// }
+
+bool iself(Entry e) {
+    int32 fd;
+    signed int ret;
+    int8 path[64];
+    char buf[4];
+
+    if (e.type != file)
+        return false;
+
+    zero(path, 64);
+    snprintf($c path, 63, "%s/%s", $c e.dir, $c e.file);
+    ret = open($c path, O_RDONLY);
+    if (ret < 1)
+        return false;
+    else
+        fd = $4 ret;
+
+    zero($1 buf, 4);
+    read($i fd, buf, 4);
+    // ssize_t n = read($i fd, buf, 4);
+    // if (n == -1) {
+    //     perror("read");
+    //     exit(1);
+    // } else if (n!=4) {
+    //     fprintf(stderr, "Incomplete read (%zd bytes)\n", n);
+    // }
+    close($i fd);
+
+    if (
+        (buf[0] == 0x7f)
+        && (buf[1] == 0x45)
+        && (buf[2] == 0x4c)
+        && (buf[3] == 0x46)
+    )
+        return true;
+    else
+        return false;
 }
 
 Database *filter(Database *input, function f) {
@@ -152,7 +191,7 @@ int main(int argc, char *argv[]) {
 
     db = mkdatabase();
     adddir(db, $1 argv[1]);
-    db2 = filter(db, &testfun);
+    db2 = filter(db, &iself);
     showdb(db2);
     destroydb(db2);
 
