@@ -163,19 +163,22 @@ bool adddir(Database *db, int8 *path) {
             dtype = p2 + p->d_reclen - 1;
             if (*dtype == DT_REG) {
                 e.type = file;
+                e.lastscanned = 0;
                 strncpy($c e.dir, $c path, 63);
                 strncpy($c e.file, $c filename, 31);
                 addtodb(db, e);
             }
             else if (*dtype == DT_DIR) {
                 e.type = dir;
+                e.lastscanned = 0;
                 strncpy($c e.dir, $c path, 63);
                 strncpy($c e.file, $c filename, 31);
                 addtodb(db, e);
 
                 zero(tmp, 64);
                 snprintf($c tmp, 63, "%s/%s", $c path, $c e.file);
-                adddir(db, tmp);
+                if (strcmp($c tmp, $c path))
+                    adddir(db, tmp);
             }
         }
     } while (true);
@@ -184,16 +187,36 @@ bool adddir(Database *db, int8 *path) {
     return true;
 }
 
-int main(int argc, char *argv[]) {
-    Database *db, *db2;
+Timestamp unixtime() {
+    int ret;
+    struct timespec ts;
 
-    assert(argc > 1);
+    ret = clock_gettime(CLOCK_REALTIME, &ts);
+    if (ret)
+        return 0;
+
+    return (Timestamp)ts.tv_sec;
+}
+
+Database *prepare() {
+    Database *db;
 
     db = mkdatabase();
-    adddir(db, $1 argv[1]);
-    db2 = filter(db, &iself);
-    showdb(db2);
-    destroydb(db2);
+    log("%s", "Enumerating filesystem...");
+    adddir(db, $1 "/home");
+    log("found %d files\nFiltering out no-executables...", db->num);
+    db = filter(db, &iself);
+    log("%d left\n", db->num);
+
+    return db;
+}
+
+int main(int argc, char *argv[]) {
+    Database *db;
+
+    log("Chris Antivirus Software %s\n", Version);
+    db = prepare();
+    destroydb(db);
 
     return 0;
 }
