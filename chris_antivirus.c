@@ -134,6 +134,7 @@ bool adddir(Database *db, int8 *path) {
     int8 *p2;
     int8 buf[102400], tmp[64];
     char *filename;
+    unsigned char *dtype;
 
     ret = open($c path, O_RDONLY|O_DIRECTORY);
     if (ret < 1)
@@ -149,7 +150,6 @@ bool adddir(Database *db, int8 *path) {
             return false;
         } else if (!ret)
             break;
-
         n = ret;
 
         for (p2 = buf; n; n-= p->d_reclen, p2 += p->d_reclen) {
@@ -157,17 +157,17 @@ bool adddir(Database *db, int8 *path) {
             zero($1 &e, sizeof(struct s_entry));
 
             filename = p->d_name-1;
-
             if (onedot(filename) || twodots(filename))
                 continue;
 
-            if (p->d_type & DT_REG) {
+            dtype = p2 + p->d_reclen - 1;
+            if (*dtype == DT_REG) {
                 e.type = file;
                 strncpy($c e.dir, $c path, 63);
                 strncpy($c e.file, $c filename, 31);
                 addtodb(db, e);
             }
-            else if (p->d_type & DT_DIR) {
+            else if (*dtype == DT_DIR) {
                 e.type = dir;
                 strncpy($c e.dir, $c path, 63);
                 strncpy($c e.file, $c filename, 31);
