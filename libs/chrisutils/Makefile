@@ -1,4 +1,4 @@
-flags=-O3 -Wall -std=c23 -m32 -I.
+flags=-O3 -Wall -std=c23 -m64 -I.
 ldflags=-fPIC -shared -ldl -D_GNU_SOURCE
 libdir=/lib/x86_64-linux-gnu/
 incdir=/usr/include

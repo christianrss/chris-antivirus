@@ -33,8 +33,8 @@ typedef unsigned long long int int64;
 #define twodots(x)          ((*(x) == '.') && (*(x+1) == '.') && !(*(x+2)))
 #define log(f, args ...)    printf(f, args); fflush(stdout)
 
-typedef int8 Dir[64];
-typedef int8 File[32];
+typedef int8 Dir[256];
+typedef int8 File[64];
 typedef unsigned long long int Timestamp;
 
 enum e_filetype {
