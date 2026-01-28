@@ -1,9 +1,12 @@
 /* chris_antivirus.c */
 #include "chris_antivirus.h"
 
-// bool testfun(Entry e) {
-//     return (e.type == dir);
-// }
+State mkstate() {
+    State s = {0};
+
+    s.stage = unscanned;
+    return s;
+}
 
 bool iself(Entry e) {
     int32 fd;
@@ -163,6 +166,7 @@ bool adddir(Database *db, int8 *path) {
             dtype = p2 + p->d_reclen - 1;
             if (*dtype == DT_REG) {
                 e.type = file;
+                e.state = mkstate();
                 e.lastscanned = 0;
                 strncpy($c e.dir, $c path, 255);
                 strncpy($c e.file, $c filename, 63);
@@ -170,6 +174,8 @@ bool adddir(Database *db, int8 *path) {
             }
             else if (*dtype == DT_DIR) {
                 e.type = dir;
+                e.state = mkstate();
+                e.state.stage = unstaged;
                 e.lastscanned = 0;
                 strncpy($c e.dir, $c path, 255);
                 strncpy($c e.file, $c filename, 63);

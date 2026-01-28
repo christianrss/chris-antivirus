@@ -44,11 +44,27 @@ enum e_filetype {
 };
 typedef enum e_filetype Filetype;
 
+enum e_state {
+    unstaged = 0,
+    unscanned = 1,
+    scanning = 2,
+    infected = 3,
+    healed = 4
+};
+typedef enum e_state estate;
+
+struct s_state {
+    estate stage;
+    int8 virus[32];
+};
+typedef struct s_state State;
+
 struct s_entry {
     Filetype type;
     Dir dir;
     File file;
     Timestamp lastscanned;
+    State state;
 };
 typedef struct s_entry Entry;
 
@@ -63,6 +79,8 @@ typedef bool (*function)(Entry);
 
 #define linux_dirent dirent
 
+State mkstate(void);
+Database *scan(Database,int32);
 Database *prepare(void);
 Timestamp unixtime(void);
 Database *filter(Database*,function);
