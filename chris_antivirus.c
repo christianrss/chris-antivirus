@@ -8,14 +8,14 @@
 bool iself(Entry e) {
     int32 fd;
     signed int ret;
-    int8 path[64];
+    int8 path[256];
     char buf[4];
 
     if (e.type != file)
         return false;
 
-    zero(path, 64);
-    snprintf($c path, 63, "%s/%s", $c e.dir, $c e.file);
+    zero(path, 256);
+    snprintf($c path, 255, "%s/%s", $c e.dir, $c e.file);
     ret = open($c path, O_RDONLY);
     if (ret < 1)
         return false;
@@ -132,7 +132,7 @@ bool adddir(Database *db, int8 *path) {
     signed int ret;
     struct linux_dirent *p;
     int8 *p2;
-    int8 buf[102400], tmp[64];
+    int8 buf[102400], tmp[256];
     char *filename;
     unsigned char *dtype;
 
@@ -164,19 +164,19 @@ bool adddir(Database *db, int8 *path) {
             if (*dtype == DT_REG) {
                 e.type = file;
                 e.lastscanned = 0;
-                strncpy($c e.dir, $c path, 63);
-                strncpy($c e.file, $c filename, 31);
+                strncpy($c e.dir, $c path, 255);
+                strncpy($c e.file, $c filename, 63);
                 addtodb(db, e);
             }
             else if (*dtype == DT_DIR) {
                 e.type = dir;
                 e.lastscanned = 0;
-                strncpy($c e.dir, $c path, 63);
-                strncpy($c e.file, $c filename, 31);
+                strncpy($c e.dir, $c path, 255);
+                strncpy($c e.file, $c filename, 63);
                 addtodb(db, e);
 
-                zero(tmp, 64);
-                snprintf($c tmp, 63, "%s/%s", $c path, $c e.file);
+                zero(tmp, 256);
+                snprintf($c tmp, 255, "%s/%s", $c path, $c e.file);
                 if (strcmp($c tmp, $c path))
                     adddir(db, tmp);
             }
@@ -203,7 +203,7 @@ Database *prepare() {
 
     db = mkdatabase();
     log("%s", "Enumerating filesystem...");
-    adddir(db, $1 "/home");
+    adddir(db, $1 "/tmp");
     log("found %d files\nFiltering out no-executables...", db->num);
     db = filter(db, &iself);
     log("%d left\n", db->num);
